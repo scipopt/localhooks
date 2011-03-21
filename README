@@ -1,0 +1,23 @@
+-----------------------------------------------------------
+	      instructions for local hooks
+-----------------------------------------------------------
+
+Hooks are scripts that run before or after certain events
+in Git. The "commit-msg" hook for example runs after the
+commit message is edited and checks for the correct format.
+
+For security reasons, local hooks have to be activated
+manually for every single repository.
+There are several ways of doing that:
+
+1: Copy the contained scripts into the directory
+	.git/hooks/
+   in your local repository.
+
+2: Create links from 
+	.git/hooks/
+   to the scripts you like to use.
+
+3: Copy this folder to your local repository and run
+	installhooks
+   to create links to all available hooks.
