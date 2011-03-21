@@ -12,16 +12,16 @@ for i in range(0,len(message)):
   line = message[i].strip('\n')
   if line.startswith('#'):
     continue
-  if (i == 0) and (len(line) > 70):
-    print "bad commit message: header line is too long (max 70 chars)"
+  if (i == 0) and (len(line) > 75):
+    print "bad commit message: header line is too long (max 75 chars)"
     print "try again with correct message format"
     exit(1)
   if (i == 1) and (len(line) > 1):
     print "bad commit message: second line has to be blank"
     print "try again with correct message format"
     exit(1)
-  if (i > 1) and (len(line) > 70):
-    print "bad commit message: description lines are too long (max 70 chars)"
+  if (i > 1) and (len(line) > 75):
+    print "bad commit message: description lines are too long (max 75 chars)"
     print "try again with correct message format"
     exit(1)
   
