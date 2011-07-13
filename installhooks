@@ -1,4 +1,24 @@
 #! /bin/sh
 
-cd ../.git/hooks/
-ln -s ../../localhooks/commit-msg
+# exit if an error occurs
+set -e
+
+# get repo path
+echo "Please choose your git repository to activate the hooks for it."
+read -e -p "Path to repository: " REPO
+REPO=${REPO%/}
+HOOKDIR=`pwd`
+
+# activate commit-msg hook
+if [ -f  $REPO/.git/hooks/commit-msg ]
+then
+   echo "Delete existing hook?"
+   rm -i $REPO/.git/hooks/commit-msg
+fi
+if [ -f  $REPO/.git/hooks/commit-msg ]
+then
+   exit
+else
+   ln -s $HOOKDIR/commit-msg $REPO/.git/hooks
+   echo "Activated hook for repository in "$REPO" to check the format of your commit messages."
+fi
