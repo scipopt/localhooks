@@ -4,7 +4,7 @@
 set -e
 
 # get repo path
-echo "Please choose your git repository to activate the hooks for it."
+echo "Please choose your git repository that you want to activate the hooks for."
 read -e -p "Path to repository: " REPO
 REPO=${REPO%/}
 HOOKDIR=`pwd`
@@ -17,8 +17,24 @@ then
 fi
 if [ -f  $REPO/.git/hooks/commit-msg ]
 then
-   exit
+   echo "Left existing hook unmodified."
 else
    ln -s $HOOKDIR/commit-msg $REPO/.git/hooks
-   echo "Activated hook for repository in "$REPO" to check the format of your commit messages."
+   echo "Activated hook for repository in "$REPO"/ to check the format of your commit messages."
 fi
+
+# activate pre-commit hook
+if [ -f  $REPO/.git/hooks/pre-commit ]
+then
+   echo "Delete existing hook?"
+   rm -i $REPO/.git/hooks/pre-commit
+fi
+if [ -f  $REPO/.git/hooks/pre-commit ]
+then
+   echo "Left existing hook unmodified."
+else
+   ln -s $HOOKDIR/pre-commit $REPO/.git/hooks
+   echo "Activated hook for repository in "$REPO"/ to check your commit for trailing whitespaces."
+fi
+
+exit

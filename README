@@ -29,5 +29,8 @@ There are several ways of doing that:
    of your local repository.
 
 Available hooks:
+----------------
    commit-msg: checks every commit message for correct
                format (line length, etc.)
+
+   pre-commit: checks every commit for trailing whitespaces
