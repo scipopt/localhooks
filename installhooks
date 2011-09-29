@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # exit if an error occurs
 set -e
@@ -7,6 +7,14 @@ set -e
 echo "Please choose your git repository that you want to activate the hooks for."
 read -e -p "Path to repository: " REPO
 REPO=${REPO%/}
+
+# check if REPO is a git repository
+if [ ! -d $REPO/.git/hooks ]
+then
+   echo Error: $REPO"/ is not a valid git repository."
+   exit
+fi
+
 HOOKDIR=`pwd`
 
 # activate commit-msg hook
