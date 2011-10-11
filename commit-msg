@@ -5,24 +5,26 @@ import os
 import sys
 
 msgfile = open(sys.argv[1], 'r')
-
 message = msgfile.readlines()
 
+valid = 0
+
 for i in range(0,len(message)):
-  line = message[i].strip('\n')
-  if line.startswith('#'):
-    continue
-  if (i == 0) and (len(line) > 75):
-    print "bad commit message: header line is too long (max 75 chars)"
-    print "try again with correct message format"
-    exit(1)
-  if (i == 1) and (len(line) > 1):
-    print "bad commit message: second line has to be blank"
-    print "try again with correct message format"
-    exit(1)
-  if (i > 1) and (len(line) > 75):
-    print "bad commit message: description lines are too long (max 75 chars)"
-    print "try again with correct message format"
-    exit(1)
-  
-exit(0)
+   line = message[i].strip('\n')
+   if line.startswith('#'):
+      continue
+   if (i == 0) and (len(line) > 75):
+      print 'Bad commit message: Header line is too long (max 75 chars).'
+      valid = 1
+   if (i == 1) and (len(line) > 1):
+      print 'Bad commit message: Second line has to be blank.'
+      valid = 1
+   if (i > 1) and (len(line) > 75):
+      print 'Bad commit message: Description line '+str(i-1)+' is too long (max 75 chars).'
+      valid = 1
+
+if valid == 1:
+   print 'Please try again with correct message format.'
+   print 'You can find your message in '+sys.argv[1]+'.'
+
+exit(valid)
