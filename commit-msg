@@ -8,7 +8,9 @@ msgfile = open(sys.argv[1], 'r')
 message = msgfile.readlines()
 
 valid = 0
-
+# do not block automaticly generated merge commits
+if message[0].startswith('Merge'):
+   exit(valid)
 for i in range(0,len(message)):
    line = message[i].strip('\n')
    if line.startswith('#'):
