@@ -9,7 +9,7 @@ message = msgfile.readlines()
 
 valid = 0
 # do not block automaticly generated merge commits
-if message[0].startswith('Merge'):
+if message[0].startswith('Merge ') or message[0].startswith('Revert '):
    exit(valid)
 for i in range(0,len(message)):
    line = message[i].strip('\n')
