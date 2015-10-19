@@ -8,7 +8,7 @@ msgfile = open(sys.argv[1], 'r')
 message = msgfile.readlines()
 
 valid = 0
-# do not block automaticly generated merge commits
+# do not block automatically generated merge commits
 if message[0].startswith('Merge ') or message[0].startswith('Revert '):
    exit(valid)
 for i in range(0,len(message)):
@@ -16,17 +16,17 @@ for i in range(0,len(message)):
    if line.startswith('#'):
       continue
    if (i == 0) and (len(line) > 75):
-      print 'Bad commit message: Header line is too long (max 75 chars).'
+      print('Bad commit message: Header line is too long (max 75 chars).')
       valid = 1
    if (i == 1) and (len(line) > 1):
-      print 'Bad commit message: Second line has to be blank.'
+      print('Bad commit message: Second line has to be blank.')
       valid = 1
    if (i > 1) and (len(line) > 75):
-      print 'Bad commit message: Description line '+str(i-1)+' is too long (max 75 chars).'
+      print('Bad commit message: Description line '+str(i-1)+' is too long (max 75 chars).')
       valid = 1
 
 if valid == 1:
-   print 'Please try again with correct message format.'
-   print 'You can find your message in '+sys.argv[1]+'.'
+   print('Please try again with correct message format.')
+   print('You can find your message in '+sys.argv[1]+'.')
 
 exit(valid)
