@@ -17,12 +17,10 @@ There are several ways of doing that:
    `.git/hooks/`
    in every repository to the scripts in this localhooks/ folder you like to use.
    example:
-
 ```
    cd scip/.git/hooks
    ln -s <pathto>localhooks/commit-msg
 ```
-
 3. Copy the contained hooks into the directory
    `.git/hooks/`
    of your local repository.
