@@ -5,44 +5,49 @@ set -e
 
 # get repo path
 echo "Please choose your git repository that you want to activate the hooks for."
-read -e -p "Path to repository: " REPO
+# It is advided to use "read" with option -r, so backslashes do not
+# escape characters, in case the repository contains a backslash.
+read -e -p "Path to repository: " -r REPO
 REPO=${REPO%/}
 
 # check if REPO is a git repository
-if [ ! -d $REPO/.git/hooks ]
+if [ ! -d "$REPO/.git/hooks" ] # please quote variables, otherwise word splitting
 then
-   echo Error: $REPO"/ is not a valid git repository."
+   echo Error: "$REPO/ is not a valid git repository."
    exit
 fi
 
-HOOKDIR=`pwd`
+# The output of command substitution has to be quoted, too,
+# to prevent word splitting.
+HOOKDIR="`pwd`"
 
 # activate commit-msg hook
-if [ -f  $REPO/.git/hooks/commit-msg ]
+if [ -f  "$REPO/.git/hooks/commit-msg" ]
 then
    echo "Delete existing hook?"
-   rm -i $REPO/.git/hooks/commit-msg
+    # "--" prevents the file name be misinterpreted as option
+   rm -i -- "$REPO/.git/hooks/commit-msg"
 fi
-if [ -f  $REPO/.git/hooks/commit-msg ]
+if [ -f  "$REPO/.git/hooks/commit-msg" ]
 then
    echo "Left existing hook unmodified."
 else
-   ln -s $HOOKDIR/commit-msg $REPO/.git/hooks
-   echo "Activated hook for repository in "$REPO"/ to check the format of your commit messages."
+   ln -s -- "$HOOKDIR/commit-msg" "$REPO/.git/hooks"
+   echo "Activated hook for repository in $REPO/ to check the format of your commit messages."
 fi
 
 # activate pre-commit hook
-if [ -f  $REPO/.git/hooks/pre-commit ]
+if [ -f  "$REPO/.git/hooks/pre-commit" ]
 then
    echo "Delete existing hook?"
-   rm -i $REPO/.git/hooks/pre-commit
+   rm -i -- "$REPO/.git/hooks/pre-commit"
 fi
-if [ -f  $REPO/.git/hooks/pre-commit ]
+if [ -f  "$REPO/.git/hooks/pre-commit" ]
 then
    echo "Left existing hook unmodified."
 else
-   ln -s $HOOKDIR/pre-commit $REPO/.git/hooks
-   echo "Activated hook for repository in "$REPO"/ to check your commit for trailing whitespaces."
+   ln -s -- "$HOOKDIR/pre-commit" "$REPO/.git/hooks"
+   echo "Activated hook for repository in $REPO/ to check your commit for trailing whitespaces."
 fi
 
 exit
