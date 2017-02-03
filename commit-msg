@@ -22,7 +22,7 @@ for i in range(0,len(message)):
       print('Bad commit message: Second line has to be blank.')
       valid = 1
    if (i > 1) and (len(line) > 75):
-      print('Bad commit message: Description line '+str(i-1)+' is too long (max 75 chars).')
+      print('Bad commit message: Description line '+str(i+1)+' is too long (max 75 chars).')
       valid = 1
 
 if valid == 1:
