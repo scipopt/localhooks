@@ -17,18 +17,18 @@ then
    exit
 fi
 
-# The output of command substitution has to be quoted, too,
-# to prevent word splitting.
-HOOKDIR="`pwd`"
+# Get path to THIS bash file == the directory of the hooks
+# see https://gist.github.com/TheMengzor/968e5ea87e99d9c41782
+HOOKDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 # activate commit-msg hook
-if [ -f  "$REPO/.git/hooks/commit-msg" ]
+if [ -f  "$REPO/.git/hooks/commit-msg" -o -L "$REPO/.git/hooks/commit-msg" ]
 then
    echo "Delete existing hook?"
     # "--" prevents the file name be misinterpreted as option
    rm -i -- "$REPO/.git/hooks/commit-msg"
 fi
-if [ -f  "$REPO/.git/hooks/commit-msg" ]
+if [ -f  "$REPO/.git/hooks/commit-msg" -o -L "$REPO/.git/hooks/commit-msg" ]
 then
    echo "Left existing hook unmodified."
 else
@@ -37,12 +37,12 @@ else
 fi
 
 # activate pre-commit hook
-if [ -f  "$REPO/.git/hooks/pre-commit" ]
+if [ -f  "$REPO/.git/hooks/pre-commit" -o -L "$REPO/.git/hooks/pre-commit" ]
 then
    echo "Delete existing hook?"
    rm -i -- "$REPO/.git/hooks/pre-commit"
 fi
-if [ -f  "$REPO/.git/hooks/pre-commit" ]
+if [ -f  "$REPO/.git/hooks/pre-commit" -o -L "$REPO/.git/hooks/pre-commit" ]
 then
    echo "Left existing hook unmodified."
 else
