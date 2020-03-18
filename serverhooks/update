@@ -1,0 +1,52 @@
+#!/bin/bash
+# hooks/update
+
+# Description from https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#Server-Side-Hooks
+#
+# The update script is very similar to the pre-receive script, except that it’s run once
+# for each branch the pusher is trying to update. If the pusher is trying to push to
+# multiple branches, pre-receive runs only once, whereas update runs once per branch
+# they’re pushing to. Instead of reading from stdin, this script takes three arguments:
+# the name of the reference (branch), the SHA-1 that reference pointed to before the push,
+# and the SHA-1 the user is trying to push. If the update script exits non-zero, only that
+# reference is rejected; other references can still be updated.
+
+refname=$1
+oldrev=$2
+newrev=$3
+echo "Enforcing policies for revision ${refname}:"
+
+# -------------------------------
+# Get the list of all the commits
+# -------------------------------
+
+# Check if a zero sha
+if [ "${oldrev}" = "0000000000000000000000000000000000000000" ]; then
+  # List everything reachable from newrev but not any heads
+  span=`git rev-list $(git for-each-ref --format='%(refname)' refs/heads/* | sed 's/^/\^/') ${newrev}`
+else
+  span=`git rev-list ${oldrev}..${newrev}`
+fi
+
+# ------------------------------------
+# Iterate over all commits in the push
+# ------------------------------------
+found=0
+for sha1 in ${span}; do
+  # check for whitespace errors in commit
+  whitespace=$(exec git diff --check ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh)
+  # check commit message
+  message=$(git log --format=%B -n 1 ${sha1} | wc -v)
+
+  # Verify its not empty
+  if [ "${whitespace}" != "" -o "${message}" -le "100" ]; then
+    found=$((${found} + 1))
+  fi
+done
+
+if [ "${found}" != "0" ]; then
+  echo "Found ${found} errors, please fix them before pushing."
+else
+  echo "All good, thank you!"
+fi
+
