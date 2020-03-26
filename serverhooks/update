@@ -36,6 +36,7 @@ fi
 # Iterate over all commits in the push
 # ------------------------------------
 found=0
+refuse=false
 for sha1 in ${span}; do
   # check for whitespace errors in commit
   whitespace=$(exec git diff --check ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh)
@@ -69,23 +70,24 @@ for sha1 in ${span}; do
     fi
   fi
 
-
   # check length of commit description lines
   for line in $(commitmessage); do
     if [ 75 -lt $(echo $line | wc -c) ]
       echo "commit: ${sha1}"
       echo "bad commit message: header or description lines are too long (max 75 chars)"
       refuse=true
+      break
     fi
   done
 
-  # Verify its not empty
-  if [ "${whitespace}" != "" -o "${commitmessage}" -le "100" ]; then
+  # Verify commit is not empty
+  if [ "${whitespace}" != "" ]; then
+    echo "commit: ${sha1} contains whitespace errors."
     found=$((${found} + 1))
   fi
 done
 
-if [ "${found}" != "0" ]; then
+if [ "${found}" != "0" -o "${refuse}" == true ]; then
   echo "Found ${found} errors, please fix them before pushing."
 else
   echo "All good, thank you!"
