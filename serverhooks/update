@@ -20,7 +20,11 @@ echo "Enforcing policies for revision ${refname}:"
 # Get the list of all the commits
 # -------------------------------
 
-# Check if a zero sha
+# exit if a branch is about to be deleted
+if new == '0000000000000000000000000000000000000000':
+  exit 0
+
+# Check if a zero sha, then either a new branch is pushed or an empty repo is being pushed
 if [ "${oldrev}" = "0000000000000000000000000000000000000000" ]; then
   # List everything reachable from newrev but not any heads
   span=`git rev-list $(git for-each-ref --format='%(refname)' refs/heads/* | sed 's/^/\^/') ${newrev}`
@@ -36,10 +40,47 @@ for sha1 in ${span}; do
   # check for whitespace errors in commit
   whitespace=$(exec git diff --check ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh)
   # check commit message
-  message=$(git log --format=%B -n 1 ${sha1} | wc -v)
+  commitmessage=$(git log --format=%B -n 1 ${sha1})
+  commitfirstline=$(echo "$commitmessage" | head -n 1)
+
+  # don't check commits from before 2020
+  if [ 2020 -le "$(git log "${sha1}" --pretty=%cd | cut -d ' ' -f 5)" ]; then
+    continue
+  fi
+
+  # don't check merge commits
+  # only merge commits have more than one parent
+  nparents=$(git cat-file -p HEAD|grep parent|wc -l)
+  if [ "${nparents}" != 1 ]; then
+    continue
+  fi
+
+  # don't check revert commits
+  if [[ "$(commitfirstline)" == Revert* ]]; then
+    continue
+  fi
+
+  # if commitmessage has 2 or more lines, make sure the second line is empty
+  if [ $(echo "$commitmessage" | wc -l) -ge 2 ]; then
+    if [ $(echo "$commitmessage" | head -n 2 | tail -n 2) != "" ]; then
+      echo "commit: ${sha1}"
+      echo "bad commit message: second line is not blank"
+      refuse=true
+    fi
+  fi
+
+
+  # check length of commit description lines
+  for line in $(commitmessage); do
+    if [ 75 -lt $(echo $line | wc -c) ]
+      echo "commit: ${sha1}"
+      echo "bad commit message: header or description lines are too long (max 75 chars)"
+      refuse=true
+    fi
+  done
 
   # Verify its not empty
-  if [ "${whitespace}" != "" -o "${message}" -le "100" ]; then
+  if [ "${whitespace}" != "" -o "${commitmessage}" -le "100" ]; then
     found=$((${found} + 1))
   fi
 done
