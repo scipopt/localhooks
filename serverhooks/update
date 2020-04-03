@@ -35,14 +35,8 @@ fi
 # ------------------------------------
 # Iterate over all commits in the push
 # ------------------------------------
-found=0
 refuse=false
 for sha1 in ${span}; do
-  # check for whitespace errors in commit
-  whitespace=$(exec git diff --check ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh)
-  # check commit message
-  commitmessage=$(git log --format=%B -n 1 ${sha1})
-  commitfirstline=$(echo "$commitmessage" | head -n 1)
 
   # don't check commits from before 2020
   if [ 2020 -le "$(git log "${sha1}" --pretty=%cd | cut -d ' ' -f 5)" ]; then
@@ -56,14 +50,18 @@ for sha1 in ${span}; do
     continue
   fi
 
+  # check commit message
+  commitmessage=$(git log --format=%B -n 1 ${sha1})
+  commitfirstline=$(echo "${commitmessage}" | head -n 1)
+
   # don't check revert commits
-  if [[ "$(commitfirstline)" == Revert* ]]; then
+  if [[ "${commitfirstline}" == Revert* ]]; then
     continue
   fi
 
   # if commitmessage has 2 or more lines, make sure the second line is empty
-  if [ $(echo "$commitmessage" | wc -l) -ge 2 ]; then
-    if [ $(echo "$commitmessage" | head -n 2 | tail -n 2) != "" ]; then
+  if [ $(echo "${commitmessage}" | wc -l) -ge 2 ]; then
+    if [ $(echo "${commitmessage}" | head -n 2 | tail -n 2) != "" ]; then
       echo "commit: ${sha1}"
       echo "bad commit message: second line is not blank"
       refuse=true
@@ -71,8 +69,8 @@ for sha1 in ${span}; do
   fi
 
   # check length of commit description lines
-  for line in $(commitmessage); do
-    if [ 75 -lt $(echo $line | wc -c) ]
+  for line in ${commitmessage}; do
+    if [ 75 -lt $(echo ${line} | wc -c) ]; then
       echo "commit: ${sha1}"
       echo "bad commit message: header or description lines are too long (max 75 chars)"
       refuse=true
@@ -80,15 +78,16 @@ for sha1 in ${span}; do
     fi
   done
 
-  # Verify commit is not empty
+  # check for whitespace errors in commit
+  whitespace=$(exec git diff --check ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh)
   if [ "${whitespace}" != "" ]; then
     echo "commit: ${sha1} contains whitespace errors."
-    found=$((${found} + 1))
+    refuse=true
   fi
 done
 
-if [ "${found}" != "0" -o "${refuse}" == true ]; then
-  echo "Found ${found} errors, please fix them before pushing."
+if [ "${refuse}" == true ]; then
+  echo "Found errors, please fix them before pushing."
 else
   echo "All good, thank you!"
 fi
