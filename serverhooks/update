@@ -47,7 +47,7 @@ for sha1 in ${span}; do
 
   # don't check merge commits
   # only merge commits have more than one parent
-  nparents=$(git cat-file -p HEAD|grep parent|wc -l)
+  nparents=$(git cat-file -p ${sha1} |grep parent|wc -l)
   if [ "${nparents}" != 1 ]; then
     continue
   fi
@@ -64,7 +64,7 @@ for sha1 in ${span}; do
 
   # if commitmessage has 2 or more lines, make sure the second line is empty
   if [ $(echo "${commitmessage}" | wc -l) -ge 2 ]; then
-    if [ "$(echo "${commitmessage}" | head -n 2 | tail -n 2)" != "" ]; then
+    if [ "$(echo "${commitmessage}" | head -n 2 | tail -n 1)" != "" ]; then
       echo "${sha1} bad commit message; second line is not blank"
       refuse=true
     fi
@@ -93,5 +93,3 @@ if [ "${refuse}" == true ]; then
 else
   echo "All good, thank you!"
 fi
-
-exit 1
