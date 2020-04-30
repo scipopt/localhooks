@@ -39,9 +39,9 @@ fi
 
 refuse=false
 for sha1 in ${span}; do
-  year=$(git log "${sha1}" --pretty=%cd -n 1| cut -d ' ' -f 5)
+  dateint=$(git log "${sha1}" --pretty=%cd -n 1 --date=format:"%Y%m%d" )
   # don't check commits from before 2020
-  if [ "${year}" -lt '2020' ]; then
+  if [ "${dateint}" -lt '20200427' ]; then
     continue
   fi
 
