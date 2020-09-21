@@ -1,0 +1,95 @@
+#!/bin/bash
+# hooks/update
+
+# Description from https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#Server-Side-Hooks
+#
+# The update script is very similar to the pre-receive script, except that it’s run once
+# for each branch the pusher is trying to update. If the pusher is trying to push to
+# multiple branches, pre-receive runs only once, whereas update runs once per branch
+# they’re pushing to. Instead of reading from stdin, this script takes three arguments:
+# the name of the reference (branch), the SHA-1 that reference pointed to before the push,
+# and the SHA-1 the user is trying to push. If the update script exits non-zero, only that
+# reference is rejected; other references can still be updated.
+
+refname=$1
+oldrev=$2
+newrev=$3
+echo "Enforcing policies for revision ${refname}:"
+
+# -------------------------------
+# Get the list of all the commits
+# -------------------------------
+
+# exit if a branch is about to be deleted
+if [ "${newrev}" == '0000000000000000000000000000000000000000' ]; then
+  exit 0
+fi
+
+# Check if a zero sha, then either a new branch is pushed or an empty repo is being pushed
+if [ "${oldrev}" == "0000000000000000000000000000000000000000" ]; then
+  # List everything reachable from newrev but not any heads
+  span=`git rev-list $(git for-each-ref --format='%(refname)' refs/heads/* | sed 's/^/\^/') ${newrev}`
+else
+  span=`git rev-list ${oldrev}..${newrev}`
+fi
+
+# ------------------------------------
+# Iterate over all commits in the push
+# ------------------------------------
+
+refuse=false
+for sha1 in ${span}; do
+  dateint=$(git log "${sha1}" --pretty=%cd -n 1 --date=format:"%Y%m%d" )
+  # don't check commits from before 2020
+  if [ "${dateint}" -lt '20200427' ]; then
+    continue
+  fi
+
+  # don't check merge commits
+  # only merge commits have more than one parent
+  nparents=$(git cat-file -p ${sha1} |grep parent|wc -l)
+  if [ "${nparents}" != 1 ]; then
+    continue
+  fi
+
+  # check commit message
+  commitmessage=$(git log --format=%B -n 1 ${sha1})
+  commitfirstline=$(echo "${commitmessage}" | head -n 1)
+
+  # don't check revert commits
+  # TODO
+  if [[ "${commitfirstline}" == Revert* ]]; then
+    continue
+  fi
+
+  # if commitmessage has 2 or more lines, make sure the second line is empty
+  if [ $(echo "${commitmessage}" | wc -l) -ge 2 ]; then
+    if [ "$(echo "${commitmessage}" | head -n 2 | tail -n 1)" != "" ]; then
+      echo "${sha1} bad commit message; second line is not blank"
+      refuse=true
+    fi
+  fi
+
+  # check length of commit description lines
+  while IFS= read -r line; do
+    if [ 75 -lt $(echo ${line} | wc -c) ]; then
+      echo "${sha1} bad commit message; header or description lines are too long (max 75 chars per line)"
+      refuse=true
+      break
+    fi
+  done <<< "${commitmessage}"
+
+  # check for whitespace errors in commit
+  whitespace=$(exec git diff --check ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh)
+  if [ "${whitespace}" != "" ]; then
+    echo "${sha1} contains whitespace errors."
+    refuse=true
+  fi
+done
+
+if [ "${refuse}" == true ]; then
+  echo "Found errors, please fix them before pushing."
+  exit 1
+else
+  echo "All good, thank you!"
+fi
