@@ -41,4 +41,20 @@ then
 	exit 1
 fi
 
-exec git diff-index --check --cached $against --
+# this checks that no unimportant whitespace changes are committed
+whitespace=$(git diff-index --check --cached $against --)
+echo "> Checking for whitespace errors."
+if [ "${whitespace}" != "" ]; then
+  echo "Your staged changes contain whitespace errors, please fix before committing."
+  exit 1
+fi
+
+# check for `#if 0` in the code
+ifzeros=$(git diff --cached HEAD *.c *.h *.cpp *.hpp *.sh | grep "^+" | grep "#if[[:space:]]*0")
+echo "> Checking occurences of '#if 0'."
+if [ "${ifzeros}" != "" ]; then
+  echo "Your staged changes contain '#if 0'. Please use '#ifdef SCIP_DISABLED_CODE' along with an explanatory comment instead."
+  exit 1
+fi
+
+echo "All fine, thank you."
