@@ -1,6 +1,9 @@
 #!/bin/bash
 # hooks/update
-
+#
+# Please install the local hooks from https://git.zib.de/optimization/localhooks/
+# to check the style locally on every commit.
+#
 # Description from https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#Server-Side-Hooks
 #
 # The update script is very similar to the pre-receive script, except that it’s run once
@@ -87,7 +90,7 @@ for sha1 in ${span}; do
   fi
 
   # check for `#if 0` in the code
-  ifzeros=$(git diff ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh | grep "^+" | grep "#if[[:space:]]*0")
+  ifzeros=$(git diff ${sha1}^ ${sha1} *.c *.h *.cpp *.hpp *.sh | grep "^+" | grep "#if[[:space:]]\+0")
   if [ "${ifzeros}" != "" ]; then
     echo "Your staged changes contain `#if 0`. Please use `#ifdef SCIP_DISABLED_CODE` along with an explanatory comment instead."
     refuse=true

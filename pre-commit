@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# An example hook script to verify what is about to be committed.
+# An extended example hook script to verify what is about to be committed.
 # Called by "git commit" with no arguments.  The hook should
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
@@ -26,18 +26,7 @@ if [ "$allownonascii" != "true" ] &&
 	test "$(git diff --cached --name-only --diff-filter=A -z $against |
 	  LC_ALL=C tr -d '[ -~]\0')"
 then
-	echo "Error: Attempt to add a non-ascii file name."
-	echo
-	echo "This can cause problems if you want to work"
-	echo "with people on other platforms."
-	echo
-	echo "To be portable it is advisable to rename the file ..."
-	echo
-	echo "If you know what you are doing you can disable this"
-	echo "check using:"
-	echo
-	echo "  git config hooks.allownonascii true"
-	echo
+	echo "Attempt to add a non-ascii file name. Please choose a different name."
 	exit 1
 fi
 
@@ -50,7 +39,7 @@ if [ "${whitespace}" != "" ]; then
 fi
 
 # check for `#if 0` in the code
-ifzeros=$(git diff --cached HEAD *.c *.h *.cpp *.hpp *.sh | grep "^+" | grep "#if[[:space:]]*0")
+ifzeros=$(git diff --cached HEAD *.c *.h *.cpp *.hpp *.sh | grep "^+" | grep "#if[[:space:]]\+0")
 echo "> Checking occurences of '#if 0'."
 if [ "${ifzeros}" != "" ]; then
   echo "Your staged changes contain '#if 0'. Please use '#ifdef SCIP_DISABLED_CODE' along with an explanatory comment instead."
