@@ -14,9 +14,9 @@
 # and the SHA-1 the user is trying to push. If the update script exits non-zero, only that
 # reference is rejected; other references can still be updated.
 
-refname=$1
-oldrev=$2
-newrev=$3
+refname=$1 # name of ref that is being updated
+oldrev=$2 # old object name that ref pointed to before
+newrev=$3 # new object name that ref should point to
 echo "Enforcing policies for revision ${refname}:"
 
 # -------------------------------
@@ -30,10 +30,14 @@ fi
 
 # Check if a zero sha, then either a new branch is pushed or an empty repo is being pushed
 if [ "${oldrev}" == "0000000000000000000000000000000000000000" ]; then
-  # List everything reachable from newrev but not any heads
-  span=`git rev-list $(git for-each-ref --format='%(refname)' refs/heads/* | sed 's/^/\^/') ${newrev}`
+  # List heads, add a ^ to negate in the following 'git rev-list' command
+  heads=$(git for-each-ref --format='%(refname)' refs/heads/* | sed 's/^/\^/')
+  # List everything reachable from ${newref} but not from any heads
+  span=$(git rev-list ${newrev} ${heads})
 else
-  span=`git rev-list ${oldrev}..${newrev}`
+  # branch labels are updated after hook ran successfully, so get all new commits, but none that are reachable from any branches
+  # specify that we don’t want any commits that are reachable from any of the known branch labels
+  span=$(git rev-list ${oldrev}..${newrev} --not --branches='*')
 fi
 
 # ------------------------------------
