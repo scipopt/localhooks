@@ -73,7 +73,7 @@ for sha1 in ${span}; do
 
   # check length of commit description lines
   while IFS= read -r line; do
-    if [ 75 -lt $(echo ${line} | wc -c) ]; then
+    if [ 75 -lt $(echo "${line}" | wc -c) ]; then
       echo "${sha1} bad commit message; header or description lines are too long (max 75 chars per line)"
       refuse=true
       break
