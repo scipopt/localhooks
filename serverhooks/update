@@ -28,21 +28,16 @@ if [ "${newrev}" == '0000000000000000000000000000000000000000' ]; then
   exit 0
 fi
 
-# Check if a zero sha, then either a new branch is pushed or an empty repo is being pushed
-if [ "${oldrev}" == "0000000000000000000000000000000000000000" ]; then
-  # List heads, add a ^ to negate in the following 'git rev-list' command
-  heads=$(git for-each-ref --format='%(refname)' refs/heads/* | sed 's/^/\^/')
-  # List everything reachable from ${newref} but not from any heads
-  span=$(git rev-list ${newrev} ${heads})
-else
-  # branch labels are updated after hook ran successfully, so get all new commits, but none that are reachable from any branches
-  # specify that we don’t want any commits that are reachable from any of the known branch labels
-  span=$(git rev-list ${oldrev}..${newrev} --not --branches='*')
-fi
+checksince="--since=2020-04-27"
 
-# ------------------------------------
-# Iterate over all commits in the push
-# ------------------------------------
+# branch labels are updated *after* the hook ran successfully,
+# so get all commits reachable from newref (that are newer than a certain date),
+# that are not reachable from any yet known ref (branch) labels
+span=$(git rev-list ${newrev} ${checksince} --not --all)
+
+# ----------------------------------------
+# Iterate over all new commits in the push
+# ----------------------------------------
 
 refuse=false
 for sha1 in ${span}; do
@@ -64,7 +59,6 @@ for sha1 in ${span}; do
   commitfirstline=$(echo "${commitmessage}" | head -n 1)
 
   # don't check revert commits
-  # TODO
   if [[ "${commitfirstline}" == Revert* ]]; then
     continue
   fi
