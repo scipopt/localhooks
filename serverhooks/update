@@ -17,6 +17,9 @@
 refname=$1 # name of ref that is being updated
 oldrev=$2 # old object name that ref pointed to before
 newrev=$3 # new object name that ref should point to
+nullsha="0000000000000000000000000000000000000000"
+emptysha=$(git hash-object -t tree /dev/null) # SHA1: "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
 echo "Enforcing policies for revision ${refname}:"
 
 # -------------------------------
@@ -24,16 +27,23 @@ echo "Enforcing policies for revision ${refname}:"
 # -------------------------------
 
 # exit if a branch is about to be deleted
-if [ "${newrev}" == '0000000000000000000000000000000000000000' ]; then
+if [ "${newrev}" == "${nullsha}" ]; then
   exit 0
 fi
 
-checksince="--since=2020-04-27"
+# Set oldrev properly if the is branch created
+if [ "${oldrev}" = "${nullsha}" ]; then
+   oldrev=$emptysha
+fi
+
+checkmessagesince="--since=2020-04-27"
+checksizesince="--since=2020-04-13"
+sizelimit=52428800
 
 # branch labels are updated *after* the hook ran successfully,
-# so get all commits reachable from newref (that are newer than a certain date),
+# so get all commits reachable from newrev (that are newer than a certain date),
 # that are not reachable from any yet known ref (branch) labels
-span=$(git rev-list ${newrev} ${checksince} --not --all)
+span=$(git rev-list ${newrev} ${checkmessagesince} --not --all)
 
 # ----------------------------------------
 # Iterate over all new commits in the push
@@ -53,6 +63,23 @@ for sha1 in ${span}; do
   if [ "${nparents}" != 1 ]; then
     continue
   fi
+
+  # check the filesize of each file stays below sizelimit
+  # list new or modified files
+  newfiles=$(git show --pretty="format:" --name-only --diff-filter=ACMRT ${sha1} )
+
+  for file in ${newfiles}; do
+    size=$(git cat-file -s "${sha1}:${file}")
+    if [[ -z $size ]]; then
+        size=0;
+    fi
+
+    if [ "${size}" -gt "${sizelimit}" ]
+    then
+      echo "${sha1} hard size limit (${sizelimit}) exceeded: ${file} (${size} bytes)"
+      refuse=true
+    fi
+  done
 
   # check commit message
   commitmessage=$(git log --format=%B -n 1 ${sha1})
