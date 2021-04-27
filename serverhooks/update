@@ -67,6 +67,12 @@ for sha1 in ${span}; do
   # list new or modified files
   modifiedfiles=$(git show --pretty="format:" --name-only --diff-filter=ACMRT ${sha1} )
 
+  whitefiles=$(git show --pretty="format:" --name-only --diff-filter=ACMRT ${sha1} | grep ' ')
+  if test -n "$whitefiles"; then
+    echo "Error: filename(s) $whitefiles contains whitespace. Aborting."
+    exit 1
+  fi
+
   for file in ${modifiedfiles}; do
     size=$(git cat-file -s "${sha1}:${file}")
     if [[ -z $size ]]; then
@@ -122,7 +128,7 @@ for sha1 in ${span}; do
 done
 
 if [ "${refuse}" == true ]; then
-  echo "Found errors, please fix them before pushing."
+  echo "Found errors, please fix them before pushing. Aborting."
   exit 1
 else
   echo "All good, thank you!"

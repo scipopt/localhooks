@@ -27,15 +27,21 @@ if [ "$allownonascii" != "true" ] &&
   test "$(git diff --cached --name-only --diff-filter=A -z $against |
     LC_ALL=C tr -d '[ -~]\0')"
     then
-      echo "Attempt to add a non-ascii file name. Please choose a different name."
+      echo "Attempt to add a non-ascii file name. Please choose a different name. Aborting."
       exit 1
+fi
+
+whitefiles=$(git diff --cached --name-only | grep ' ')
+if test -n "$whitefiles"; then
+  echo "Error: filename(s) $whitefiles contains whitespace. Aborting."
+  exit 1
 fi
 
 # this checks that no unimportant whitespace changes are committed
 whitespace=$(git diff-index --check --cached $against --)
 echo "> Checking for whitespace errors."
 if [ "${whitespace}" != "" ]; then
-  echo "Your staged changes contain whitespace errors, please fix before committing."
+  echo "Your staged changes contain whitespace errors, please fix before committing. Aborting."
   exit 1
 fi
 
@@ -43,19 +49,21 @@ fi
 ifzeros=$(git diff --cached HEAD *.c *.h *.cpp *.hpp *.sh | grep "^+" | grep "#if[[:space:]]\+0")
 echo "> Checking occurences of '#if 0'."
 if [ "${ifzeros}" != "" ]; then
-  echo "Your staged changes contain '#if 0'. Please use '#ifdef SCIP_DISABLED_CODE' along with an explanatory comment instead."
+  echo "Your staged changes contain '#if 0'. Please use '#ifdef SCIP_DISABLED_CODE' along with an explanatory comment instead. Aborting."
   exit 1
 fi
 
 # check the filesize of each file stays below sizelimit
 # list new or modified files newfiles=$(git diff --staged --name-only )
 currdir="$(pwd)"
-for file in $(git diff --cached --name-only | sort | uniq); do
-  filesize=$(du -b ${currdir}/${file} | awk '{print $1}')
-  if [ "${size}" -ge "${sizelimit}" ]; then
-    echo "hard size limit (${sizelimit}) exceeded: ${file} (${size} bytes)"
+
+for file in $(git diff --cached --name-only | sort | uniq ); do
+  filesize=$(du -b "${currdir}/${file}" | awk '{print $1}')
+  if [ "${filesize}" -ge "${sizelimit}" ]; then
+    echo "Error: hard size limit (${sizelimit}) exceeded for file ${file} (${filesize} bytes). Aborting."
     exit 1
   fi
 done
 
 echo "All fine, thank you."
+exit 1
