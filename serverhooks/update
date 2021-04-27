@@ -66,9 +66,9 @@ for sha1 in ${span}; do
 
   # check the filesize of each file stays below sizelimit
   # list new or modified files
-  newfiles=$(git show --pretty="format:" --name-only --diff-filter=ACMRT ${sha1} )
+  modifiedfiles=$(git show --pretty="format:" --name-only --diff-filter=ACMRT ${sha1} )
 
-  for file in ${newfiles}; do
+  for file in ${modifiedfiles}; do
     size=$(git cat-file -s "${sha1}:${file}")
     if [[ -z $size ]]; then
         size=0;
