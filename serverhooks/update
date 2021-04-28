@@ -43,6 +43,8 @@ sizelimit=52428800
 # so get all commits reachable from newrev (that are newer than a certain date),
 # that are not reachable from any yet known ref (branch) labels
 span=$(git rev-list ${newrev} ${checksince} --not --all)
+# use the following line to test this hook
+#span=$(git log --oneline --no-abbrev-commit | cut -d ' ' -f 1 | head -n 3)
 
 # ----------------------------------------
 # Iterate over all new commits in the push
