@@ -57,13 +57,16 @@ fi
 # list new or modified files newfiles=$(git diff --staged --name-only )
 currdir="$(pwd)"
 
-for file in $(git diff --cached --name-only | sort | uniq ); do
-  filesize=$(du -b "${currdir}/${file}" | awk '{print $1}')
+for f in $(git diff --cached --name-only | sort | uniq ); do
+  file="${currdir}/${f}"
+  if ! test -f "$file"; then
+    continue
+  fi
+  filesize=$(du -b "${file}" | awk '{print $1}')
   if [ "${filesize}" -ge "${sizelimit}" ]; then
-    echo "Error: hard size limit (${sizelimit}) exceeded for file ${file} (${filesize} bytes). Aborting."
+    echo "Error: hard size limit (${sizelimit}) exceeded for file ${f} (${filesize} bytes). Aborting."
     exit 1
   fi
 done
 
 echo "All fine, thank you."
-exit 1
