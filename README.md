@@ -1,3 +1,16 @@
+Localhooks for scip
+----------
+
+These git hooks help to check the correct format of commits before pushing.
+They need to be installed by the user for the local repository.
+For instructions please continue reading.
+
+Available hooks:
+----------------
+
+ - commit-msg: checks every commit message for correct format (line length, etc.)
+ - pre-commit: checks every commit for trailing whitespaces, filename format and that the files size does not exceed 50 MB
+
 Instructions for local hooks
 -----------------
 
@@ -25,8 +38,3 @@ There are several ways of doing that:
    `.git/hooks/`
    of your local repository.
 
-Available hooks:
-----------------
-
- - commit-msg: checks every commit message for correct format (line length, etc.)
- - pre-commit: checks every commit for trailing whitespaces
