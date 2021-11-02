@@ -41,7 +41,7 @@ fi
 whitespace=$(git diff-index --check --cached $against --)
 echo "> Checking for whitespace errors."
 if [ "${whitespace}" != "" ]; then
-  echo "Your staged changes contain whitespace errors, please fix before committing. Aborting."
+    echo "Your staged changes contain whitespace errors, please fix before committing. (See them with 'git diff --check --cached'.) Aborting."
   exit 1
 fi
 
