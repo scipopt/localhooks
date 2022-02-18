@@ -45,14 +45,14 @@ if [ "${whitespace}" != "" ]; then
   exit 1
 fi
 
-
+# check for missing trailing newlines
 # Files (not deleted) in the index
 files=$(git diff-index --cached --name-only --diff-filter=d "$against")
 result=0  # track exit code
-if [ -n "$files" ]; then
-  for f in $files; do
+if [ -n "${files}" ]; then
+  for f in ${files}; do
     # Only report known text files...
-    if [ -z "$(git diff-index --cached --stat=1 "$against" "$f" | grep -is '| Bin')" ]; then
+    if [ -z "$(git diff-index --cached --stat=1 "${against}" "$f" | grep -is '| Bin')" ]; then
       # Only match regular files (e.g. no symlinks)
       # See: https://stackoverflow.com/a/8347325
       if [ "$(git ls-files --stage "$f" | awk '{print $1}' | head -c2 - )" = "10" ]; then
@@ -64,11 +64,14 @@ if [ -n "$files" ]; then
             echo "Error: The following files have no trailing newline:"
           fi
           echo "$f"
-          exit 1
+          result=1
         fi
       fi
     fi
   done
+  if [ "$result" -eq "1" ]; then
+    exit 1
+  fi
 fi
 
 # check for `#if 0` in the code
