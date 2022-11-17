@@ -74,6 +74,13 @@ if [ -n "${files}" ]; then
   fi
 fi
 
+# check that no files are introduced anymore containing the ZIB Academic License
+zibacademic=$(git diff --cached HEAD | grep "^+" | grep "ZIB Academic Li")
+if [ "${zibacademic}" != "" ]; then
+  echo "Your staged changes introduce the 'ZIB Academic License, although SCIP will be licensed under the Apache 2.0 license in the future."
+  refuse=true
+fi
+
 # check for `#if 0` in the code
 ifzeros=$(git diff --cached HEAD *.c *.h *.cpp *.hpp *.sh | grep "^+" | grep "#if[[:space:]]\+0")
 echo "> Checking occurences of '#if 0'."
