@@ -77,7 +77,7 @@ fi
 # check that no files are introduced anymore containing the ZIB Academic License
 zibacademic=$(git diff --cached HEAD | grep "^+" | grep "ZIB Academic Li")
 if [ "${zibacademic}" != "" ]; then
-  echo "Your staged changes introduce the 'ZIB Academic License, although SCIP will be licensed under the Apache 2.0 license in the future."
+  echo "Your staged changes introduce the 'ZIB Academic License, although SCIP is licensed under the Apache 2.0 license."
   refuse=true
 fi
 
