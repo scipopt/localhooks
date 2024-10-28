@@ -32,9 +32,8 @@ There are several ways of doing that:
    example:
 ```
    cd scip/.git/hooks
-   ln -s <pathto>localhooks/commit-msg
+   ln -s /path/to/localhooks/commit-msg
 ```
 3. Copy the contained hooks into the directory
    `.git/hooks/`
    of your local repository.
-
